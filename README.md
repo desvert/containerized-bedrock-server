@@ -44,9 +44,9 @@ Operators are able to:
 - Manage players
 - Run server-side commands
 
-Cheats are explicitly enabled at the server level to allow controlled
-administrative actions. Authentication remains online-only using Microsoft /
-Xbox identities.
+Cheat functionality is explicitly enabled at the server level to allow
+controlled administrative actions. Authentication remains online-only using
+Microsoft / Xbox identities.
 
 ---
 
@@ -88,12 +88,75 @@ automation tasks to aid troubleshooting.
 
 ---
 
+## Repository Contents
+
+### Configuration
+- `docker-compose.yml`  
+  Defines the Bedrock server container, restart behavior, networking, and
+  environment-based configuration.
+
+### Scripts (`scripts/`)
+- `backup_graceful.sh`  
+  Performs live, non-disruptive backups using Bedrock save controls before
+  archiving persistent data.
+
+- `apply_rules.sh`  
+  Applies a predefined set of gamerules after server startup to prevent
+  configuration drift.
+
+- `health_check.sh`  
+  Simple status and connectivity check for the running container and server.
+
+### Systemd Unit (`systemd/`)
+- `bedrock-rules.service`  
+  One-shot systemd service that runs `apply_rules.sh` automatically after
+  Docker starts on boot.
+
+---
+
+## How the Service Is Operated
+
+### Initial startup
+```bash
+docker-compose up -d
+````
+
+### Apply automated gamerules manually (if needed)
+
+```bash
+./scripts/apply_rules.sh
+```
+
+### Perform a manual graceful backup
+
+```bash
+./scripts/backup_graceful.sh
+```
+
+### Enable automated gamerule enforcement at boot
+
+```bash
+sudo cp systemd/bedrock-rules.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now bedrock-rules.service
+```
+
+### Schedule automated backups (example: daily at 3:30 AM)
+
+```cron
+30 3 * * * /home/USERNAME/bedrock_server/scripts/backup_graceful.sh >> /home/USERNAME/bedrock_server/backup.log 2>&1
+```
+
+---
+
 ## Reliability Outcomes
+
 The final system provides:
-- Automatic recovery after crashes or reboots
-- Safe, repeatable backups
-- Predictable configuration enforcement
-- Low operational overhead
+
+* Automatic recovery after crashes or reboots
+* Safe, repeatable backups
+* Predictable configuration enforcement
+* Low operational overhead
 
 From an operational perspective, the service behaves like a small, well-managed
 Linux workload.
@@ -101,23 +164,20 @@ Linux workload.
 ---
 
 ## Skills Demonstrated
-- Linux system administration
-- Docker and container lifecycle management
-- Persistent storage handling
-- Service automation with systemd and cron
-- Backup design and validation
-- Permission and access control
-- Configuration drift mitigation
+
+* Linux system administration
+* Docker and container lifecycle management
+* Persistent storage handling
+* Service automation with systemd and cron
+* Backup design and validation
+* Permission and access control
+* Configuration drift mitigation
 
 ---
 
 ## Reflection
+
 This project demonstrates how infrastructure principles apply even to small
 services. Treating the server as a production-style workload reinforced best
 practices around automation, resilience, and documentation, while providing a
 practical environment for applying Linux and networking concepts.
-
----
-
-This repository is provided for educational and portfolio purposes.
-Scripts and configurations are intentionally simplified and sanitized.
