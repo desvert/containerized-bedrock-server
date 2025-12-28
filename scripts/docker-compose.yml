@@ -1,0 +1,28 @@
+services:
+  bedrock:
+    image: itzg/minecraft-bedrock-server
+    container_name: mc-bedrock
+    restart: unless-stopped
+    ports:
+      - "19132:19132/udp"
+    environment:
+      EULA: "TRUE"
+      SERVER_NAME: "Family Realm"
+      GAMEMODE: "survival"
+      DIFFICULTY: "easy"
+      LEVEL_NAME: "family_world"
+      ONLINE_MODE: "true"
+
+      # Allow commands like /gamerule, /tp, etc. (also impacts achievements)
+      ALLOW_CHEATS: "true"
+
+      # Comma-separated operator gamertags (exact matches)
+      OPS: "YOUR_GAMERTAG_HERE"
+
+      # Optional: allowlist only family/friends
+      # ALLOW_LIST: "true"
+
+      # Optional: seed used only when the world is first created
+      # LEVEL_SEED: "123456789"
+    volumes:
+      - ./data:/data
